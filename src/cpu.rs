@@ -165,6 +165,72 @@ impl CPU {
                 self.a.value = *value;
                 self.inc_clock_cycles_via_ins(&instruction);
             }
+
+            OPCODE::LDX_I => {
+                let value = memory.read_byte(&first_opr);
+                self.x.value = *value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDX_A => {
+                let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
+                let value= *memory.read_byte(&(high_addr + low_addr));
+                self.x.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            /* TODO: consider page crosses and add a extra cpu cycle to the execution */
+            OPCODE::LDX_AY => {
+                let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
+                let value= *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16)));
+                self.x.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDX_ZP => {
+                let base_addr: u16 = (*memory.read_byte(&(first_opr)) as u16 + ZP_S) as u16;
+                let value = memory.read_byte(&base_addr);
+                self.x.value = *value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDX_ZPY => {
+                let base_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let value : u8 = *memory.read_byte(&(base_addr + self.y.value as u16 + ZP_S));
+                self.x.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+
+            OPCODE::LDY_I => {
+                let value = memory.read_byte(&first_opr);
+                self.y.value = *value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDY_A => {
+                let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
+                let value= *memory.read_byte(&(high_addr + low_addr));
+                self.y.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            /* TODO: consider page crosses and add a extra cpu cycle to the execution */
+            OPCODE::LDY_AX => {
+                let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
+                let value= *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16)));
+                self.y.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDY_ZP => {
+                let base_addr: u16 = (*memory.read_byte(&(first_opr)) as u16 + ZP_S) as u16;
+                let value = memory.read_byte(&base_addr);
+                self.y.value = *value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
+            OPCODE::LDY_ZPX => {
+                let base_addr: u16 = *memory.read_byte(&first_opr) as u16;
+                let value : u8 = *memory.read_byte(&(base_addr + self.x.value as u16 + ZP_S));
+                self.y.value = value;
+                self.inc_clock_cycles_via_ins(&instruction);
+            }
         }
         self.program_counter.value += instruction.size();
     }

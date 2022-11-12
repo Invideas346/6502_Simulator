@@ -29,6 +29,18 @@ pub enum OPCODE {
     LDA_AY = 0xB9,
     LDA_IX = 0xA1,
     LDA_IY = 0xB1,
+
+    LDX_I = 0xA2,
+    LDX_A = 0xAE,
+    LDX_AY = 0xBE,
+    LDX_ZP = 0xA6,
+    LDX_ZPY = 0xB6,
+
+    LDY_I = 0xA0,
+    LDY_A = 0xAC,
+    LDY_AX = 0xBC,
+    LDY_ZP = 0xA4,
+    LDY_ZPX = 0xB4,
 }
 
 #[derive(Debug)]
@@ -105,6 +117,18 @@ impl From<OPCODE> for Instruction {
             OPCODE::LDA_AY => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
             OPCODE::LDA_IX => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 6},
             OPCODE::LDA_IY => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 5},
+
+            OPCODE::LDX_I => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 4},
+            OPCODE::LDX_A => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4 },
+            OPCODE::LDX_AY => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::LDX_ZP => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 6},
+            OPCODE::LDX_ZPY => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 5},
+
+            OPCODE::LDY_I => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 4},
+            OPCODE::LDY_A => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4 },
+            OPCODE::LDY_AX => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::LDY_ZP => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 6},
+            OPCODE::LDY_ZPX => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 5},
         }
     }
 }
@@ -136,6 +160,18 @@ impl TryFrom<u8> for Instruction {
             x if x == OPCODE::LDA_AY as u8 => Ok(Instruction { opc: OPCODE::LDA_AY, param: Vec::new(), size: 3, cycles: 4 }),
             x if x == OPCODE::LDA_IX as u8 => Ok(Instruction { opc: OPCODE::LDA_IX, param: Vec::new(), size: 2, cycles: 6 }),
             x if x == OPCODE::LDA_IY as u8 => Ok(Instruction { opc: OPCODE::LDA_IY, param: Vec::new(), size: 2, cycles: 5 }),
+
+            x if x == OPCODE::LDX_I as u8 => Ok(Instruction { opc: OPCODE::LDX_I, param: Vec::new(), size: 2, cycles: 2 }),
+            x if x == OPCODE::LDX_A as u8 => Ok(Instruction { opc: OPCODE::LDX_A, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::LDX_AY as u8 => Ok(Instruction { opc: OPCODE::LDX_AY, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::LDX_ZP as u8 => Ok(Instruction { opc: OPCODE::LDX_ZP, param: Vec::new(), size: 2, cycles: 3 }),
+            x if x == OPCODE::LDX_ZPY as u8 => Ok(Instruction { opc: OPCODE::LDX_ZPY, param: Vec::new(), size: 2, cycles: 4 }),
+
+            x if x == OPCODE::LDY_I as u8 => Ok(Instruction { opc: OPCODE::LDY_I, param: Vec::new(), size: 2, cycles: 2 }),
+            x if x == OPCODE::LDY_A as u8 => Ok(Instruction { opc: OPCODE::LDY_A, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::LDY_AX as u8 => Ok(Instruction { opc: OPCODE::LDY_AX, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::LDY_ZP as u8 => Ok(Instruction { opc: OPCODE::LDY_ZP, param: Vec::new(), size: 2, cycles: 3 }),
+            x if x == OPCODE::LDY_ZPX as u8 => Ok(Instruction { opc: OPCODE::LDY_ZPX, param: Vec::new(), size: 2, cycles: 4 }),
             _ => { Err(()) }
         }
     }

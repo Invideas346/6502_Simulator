@@ -2,7 +2,7 @@
 mod tests {
     use crate::{CPU, Instruction, LDA_A, Memory};
     use crate::memory::ZP_S;
-    use crate::OPCODE::{LDA_AX, LDA_AY, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX};
+    use crate::OPCODE::{LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX};
 
     #[test]
     fn test_sta_zp() {
@@ -114,15 +114,13 @@ mod tests {
         assert_eq!(*mem.read_byte(&(0x4010 as u16)), 0x13);
     }
 
-
     #[test]
     fn test_lda_i() {
         let mut cpu: CPU = CPU::new(0, 0, 0, 0);
         let mut mem: Memory = Memory::new();
-        mem.push_back_ins(Instruction::new(LDA_A, &vec![0x12, 0x23]));
-        mem.physical_mem[0x2312] = 0xFF;
+        mem.push_back_ins(Instruction::new(LDA_I, &vec![0x12]));
         cpu.execute(&mut mem);
-        assert_eq!(cpu.a().value, 0xFF);
+        assert_eq!(cpu.a().value, 0x12);
     }
     #[test]
     fn test_lda_zp() {
@@ -189,5 +187,95 @@ mod tests {
         mem.physical_mem[(0x1050) as usize] = 0xFF;
         cpu.execute(&mut mem);
         assert_eq!(cpu.a().value, 0xFF);
+    }
+
+    #[test]
+    fn test_ldx_i() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDX_I, &vec![0x12]));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x12);
+    }
+    #[test]
+    fn test_ldx_a() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDX_A, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8010) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0xFF);
+    }
+    #[test]
+    fn test_ldx_ay() {
+        let mut cpu: CPU = CPU::new(0, 0, 0x2, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDX_AY, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8012) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0xFF);
+    }
+    #[test]
+    fn test_ldx_zp() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDX_ZP, &vec![0x10]));
+        mem.physical_mem[(ZP_S + 0x10) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0xFF);
+    }
+    #[test]
+    fn test_ldx_zpy() {
+        let mut cpu: CPU = CPU::new(0, 0, 0x1, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDX_ZPY, &vec![0x10]));
+        mem.physical_mem[(ZP_S + 0x11) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0xFF);
+    }
+
+    #[test]
+    fn test_ldy_i() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDY_I, &vec![0x12]));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.y().value, 0x12);
+    }
+    #[test]
+    fn test_ldy_a() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDY_A, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8010) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.y().value, 0xFF);
+    }
+    #[test]
+    fn test_ldy_ax() {
+        let mut cpu: CPU = CPU::new(0, 0x2, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDY_AX, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8012) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.y().value, 0xFF);
+    }
+    #[test]
+    fn test_ldy_zp() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDY_ZP, &vec![0x10]));
+        mem.physical_mem[(ZP_S + 0x10) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.y().value, 0xFF);
+    }
+    #[test]
+    fn test_ldy_zpx() {
+        let mut cpu: CPU = CPU::new(0, 0x1, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(LDY_ZPX, &vec![0x10]));
+        mem.physical_mem[(ZP_S + 0x11) as usize] = 0xFF;
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.y().value, 0xFF);
     }
 }
