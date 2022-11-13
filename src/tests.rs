@@ -2,7 +2,9 @@
 mod tests {
     use crate::{CPU, Instruction, LDA_A, Memory};
     use crate::memory::ZP_S;
-    use crate::OPCODE::{LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX};
+    use crate::OPCODE::{CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP,
+                        LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A,
+                        STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX};
 
     #[test]
     fn test_sta_zp() {
@@ -277,5 +279,79 @@ mod tests {
         mem.physical_mem[(ZP_S + 0x11) as usize] = 0xFF;
         cpu.execute(&mut mem);
         assert_eq!(cpu.y().value, 0xFF);
+    }
+
+    #[test]
+    fn test_cpx_i() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPX_I, &vec![0x10]));
+        cpu.execute(&mut mem);
+
+        /* test whether a equal can be detected */
+        /* to detect a equals only the zero flag has to be true */
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
+    }
+    #[test]
+    fn test_cpx_a() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPX_A, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8010 as usize)] = 0x10;
+        cpu.execute(&mut mem);
+
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
+    }
+    #[test]
+    fn test_cpx_zp() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPX_ZP, &vec![0x20]));
+        mem.physical_mem[(ZP_S + 0x20) as usize] = 0x10;
+        cpu.execute(&mut mem);
+
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
+    }
+
+    #[test]
+    fn test_cpy_i() {
+        let mut cpu: CPU = CPU::new(0, 0, 0x10, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPY_I, &vec![0x10]));
+        cpu.execute(&mut mem);
+
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
+    }
+    #[test]
+    fn test_cpy_a() {
+        let mut cpu: CPU = CPU::new(0, 0, 0x10, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPY_A, &vec![0x10, 0x80]));
+        mem.physical_mem[(0x8010 as usize)] = 0x10;
+        cpu.execute(&mut mem);
+
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
+    }
+    #[test]
+    fn test_cpy_zp() {
+        let mut cpu: CPU = CPU::new(0, 0, 0x10, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CPY_ZP, &vec![0x20]));
+        mem.physical_mem[(ZP_S + 0x20) as usize] = 0x10;
+        cpu.execute(&mut mem);
+
+        assert_eq!(*cpu.n_flag(), false);
+        assert_eq!(*cpu.z_flag(), true);
+        assert_eq!(*cpu.c_flag(), true);
     }
 }

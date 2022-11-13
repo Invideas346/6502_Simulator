@@ -41,6 +41,23 @@ pub enum OPCODE {
     LDY_AX = 0xBC,
     LDY_ZP = 0xA4,
     LDY_ZPX = 0xB4,
+
+    CMP_I = 0xC9,
+    CMP_ZP = 0xC5,
+    CMP_ZPX = 0xD5,
+    CMP_A = 0xCD,
+    CMP_AX = 0xDD,
+    CMP_AY = 0xD9,
+    CMP_IX = 0xC1,
+    CMP_IY = 0xD1,
+
+    CPX_I = 0xE0,
+    CPX_A = 0xEC,
+    CPX_ZP = 0xE4,
+
+    CPY_I = 0xC0,
+    CPY_A = 0xCC,
+    CPY_ZP = 0xC4,
 }
 
 #[derive(Debug)]
@@ -129,6 +146,23 @@ impl From<OPCODE> for Instruction {
             OPCODE::LDY_AX => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
             OPCODE::LDY_ZP => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 6},
             OPCODE::LDY_ZPX => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 5},
+
+            OPCODE::CMP_I => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 2},
+            OPCODE::CMP_ZP => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 3},
+            OPCODE::CMP_ZPX => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 4},
+            OPCODE::CMP_A => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::CMP_AX => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::CMP_AY => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 3},
+            OPCODE::CMP_IX => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 6},
+            OPCODE::CMP_IY => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 5},
+
+            OPCODE::CPX_I => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 2},
+            OPCODE::CPX_A => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::CPX_ZP => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 3},
+
+            OPCODE::CPY_I => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 2},
+            OPCODE::CPY_A => Instruction { opc: code, param: Vec::new(), size: 3, cycles: 4},
+            OPCODE::CPY_ZP => Instruction { opc: code, param: Vec::new(), size: 2, cycles: 3},
         }
     }
 }
@@ -172,6 +206,23 @@ impl TryFrom<u8> for Instruction {
             x if x == OPCODE::LDY_AX as u8 => Ok(Instruction { opc: OPCODE::LDY_AX, param: Vec::new(), size: 3, cycles: 4 }),
             x if x == OPCODE::LDY_ZP as u8 => Ok(Instruction { opc: OPCODE::LDY_ZP, param: Vec::new(), size: 2, cycles: 3 }),
             x if x == OPCODE::LDY_ZPX as u8 => Ok(Instruction { opc: OPCODE::LDY_ZPX, param: Vec::new(), size: 2, cycles: 4 }),
+
+            x if x == OPCODE::CMP_I as u8 => Ok(Instruction { opc: OPCODE::CMP_I, param: Vec::new(), size: 2, cycles: 2 }),
+            x if x == OPCODE::CMP_ZP as u8 => Ok(Instruction { opc: OPCODE::CMP_ZP, param: Vec::new(), size: 2, cycles: 3 }),
+            x if x == OPCODE::CMP_ZPX as u8 => Ok(Instruction { opc: OPCODE::CMP_ZPX, param: Vec::new(), size: 2, cycles: 4 }),
+            x if x == OPCODE::CMP_A as u8 => Ok(Instruction { opc: OPCODE::CMP_A, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::CMP_AX as u8 => Ok(Instruction { opc: OPCODE::CMP_AX, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::CMP_AY as u8 => Ok(Instruction { opc: OPCODE::CMP_AY, param: Vec::new(), size: 3, cycles: 3 }),
+            x if x == OPCODE::CMP_IX as u8 => Ok(Instruction { opc: OPCODE::CMP_IX, param: Vec::new(), size: 2, cycles: 6 }),
+            x if x == OPCODE::CMP_IY as u8 => Ok(Instruction { opc: OPCODE::CMP_IY, param: Vec::new(), size: 2, cycles: 5 }),
+
+            x if x == OPCODE::CPX_I as u8 => Ok(Instruction { opc: OPCODE::CPX_I, param: Vec::new(), size: 2, cycles: 2 }),
+            x if x == OPCODE::CPX_A as u8 => Ok(Instruction { opc: OPCODE::CPX_A, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::CPX_ZP as u8 => Ok(Instruction { opc: OPCODE::CPX_ZP, param: Vec::new(), size: 2, cycles: 3 }),
+
+            x if x == OPCODE::CPY_I as u8 => Ok(Instruction { opc: OPCODE::CPY_I, param: Vec::new(), size: 2, cycles: 2 }),
+            x if x == OPCODE::CPY_A as u8 => Ok(Instruction { opc: OPCODE::CPY_A, param: Vec::new(), size: 3, cycles: 4 }),
+            x if x == OPCODE::CPY_ZP as u8 => Ok(Instruction { opc: OPCODE::CPY_ZP, param: Vec::new(), size: 2, cycles: 3 }),
             _ => { Err(()) }
         }
     }
