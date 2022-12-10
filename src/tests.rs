@@ -2,10 +2,10 @@
 mod tests {
     use crate::memory::ZP_S;
     use crate::OPCODE::{
-        CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP,
-        LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX,
-        STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A,
-        STY_ZP, STY_ZPX,
+        ADC_I, ADC_ZP, ADC_ZPX, CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I,
+        LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX,
+        LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A,
+        STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX,
     };
     use crate::{Instruction, Memory, CPU, LDA_A};
 
@@ -356,5 +356,37 @@ mod tests {
         assert_eq!(*cpu.n_flag(), false);
         assert_eq!(*cpu.z_flag(), true);
         assert_eq!(*cpu.c_flag(), true);
+    }
+
+    #[test]
+    fn test_adc_i() {
+        let mut cpu: CPU = CPU::new(0x10, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ADC_I, &vec![0x20]));
+        cpu.execute(&mut mem);
+
+        assert_eq!(cpu.a().value, 0x30);
+    }
+
+    #[test]
+    fn test_adc_zp() {
+        let mut cpu: CPU = CPU::new(0x10, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ADC_ZP, &vec![0x20]));
+        mem.physical_mem[(ZP_S + 0x20) as usize] = 0x32;
+        cpu.execute(&mut mem);
+
+        assert_eq!(cpu.a().value, 0x42);
+    }
+
+    #[test]
+    fn test_adc_zpx() {
+        let mut cpu: CPU = CPU::new(0x10, 0x15, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ADC_ZPX, &vec![0x20]));
+        mem.physical_mem[(ZP_S + 0x20 + 0x15) as usize] = 0x32;
+        cpu.execute(&mut mem);
+
+        assert_eq!(cpu.a().value, 0x42);
     }
 }

@@ -59,6 +59,10 @@ pub enum OPCODE {
     CPY_A = 0xCC,
     CPY_ZP = 0xC4,
 
+    /*
+        TODO: ONLY non-BDC addition is implemented
+        https://www.electrical4u.com/bcd-or-binary-coded-decimal-bcd-conversion-addition-subtraction/ 
+    */
     ADC_I = 0x69,
     ADC_ZP = 0x65,
     ADC_ZPX = 0x75,
