@@ -1,6 +1,6 @@
-use crate::{Instruction, OPCODE};
-use crate::register::Register;
 use crate::memory::{Memory, PROGRAM_ROM_S, ZP_S};
+use crate::register::Register;
+use crate::{Instruction, OPCODE};
 
 pub struct CPU {
     a: Register<u8>,
@@ -29,12 +29,10 @@ impl CPU {
             self.n_flag = false;
             self.z_flag = true;
             self.c_flag = true;
-        }
-        else if value >= reg_value {
+        } else if value >= reg_value {
             self.z_flag = false;
             self.c_flag = false;
-        }
-        else if value <= reg_value {
+        } else if value <= reg_value {
             self.z_flag = false;
             self.c_flag = true;
         }
@@ -75,15 +73,20 @@ impl CPU {
                 memory.write_byte(&(ZP_S + addr + (self.x.value as u16)), &self.a.value);
             }
             OPCODE::STA_A => {
-                let addr = (*memory.read_byte(&first_opr) as u16) + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
+                let addr = (*memory.read_byte(&first_opr) as u16)
+                    + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
                 memory.write_byte(&addr, &self.a.value);
             }
             OPCODE::STA_AX => {
-                let addr = (*memory.read_byte(&first_opr) as u16) + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8) + (self.x.value as u16);
+                let addr = (*memory.read_byte(&first_opr) as u16)
+                    + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8)
+                    + (self.x.value as u16);
                 memory.write_byte(&addr, &self.a.value);
             }
             OPCODE::STA_AY => {
-                let addr = (*memory.read_byte(&first_opr) as u16) + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8) + (self.y.value as u16);
+                let addr = (*memory.read_byte(&first_opr) as u16)
+                    + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8)
+                    + (self.y.value as u16);
                 memory.write_byte(&addr, &self.a.value);
             }
             OPCODE::STA_IX => {
@@ -93,9 +96,11 @@ impl CPU {
                 memory.write_byte(&addr, &self.a.value);
             }
             OPCODE::STA_IY => {
-                let addr = ((*memory.read_byte(&(*memory.read_byte(&first_opr) as u16))) as u16) +
-                    (((*memory.read_byte(&(((*memory.read_byte(&(first_opr as u16))) as u16) + 1)) as u16) << 8) as u16) +
-                    (self.y.value as u16);
+                let addr = ((*memory.read_byte(&(*memory.read_byte(&first_opr) as u16))) as u16)
+                    + (((*memory.read_byte(&(((*memory.read_byte(&(first_opr as u16))) as u16) + 1))
+                        as u16)
+                        << 8) as u16)
+                    + (self.y.value as u16);
                 memory.write_byte(&addr, &self.a.value);
             }
 
@@ -108,7 +113,8 @@ impl CPU {
                 memory.write_byte(&(ZP_S + addr + (self.y.value as u16)), &self.x.value);
             }
             OPCODE::STX_A => {
-                let addr = (*memory.read_byte(&first_opr) as u16) + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
+                let addr = (*memory.read_byte(&first_opr) as u16)
+                    + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
                 memory.write_byte(&addr, &self.x.value);
             }
 
@@ -121,7 +127,8 @@ impl CPU {
                 memory.write_byte(&(ZP_S + addr + (self.x.value as u16)), &self.y.value);
             }
             OPCODE::STY_A => {
-                let addr = (*memory.read_byte(&first_opr) as u16) + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
+                let addr = (*memory.read_byte(&first_opr) as u16)
+                    + ((*memory.read_byte(&(first_opr + 1)) as u16) << 8);
                 memory.write_byte(&addr, &self.y.value);
             }
 
@@ -136,27 +143,27 @@ impl CPU {
             }
             OPCODE::LDA_ZPX => {
                 let base_addr: u16 = *memory.read_byte(&first_opr) as u16;
-                let value : u8 = *memory.read_byte(&(base_addr + self.x.value as u16 + ZP_S));
+                let value: u8 = *memory.read_byte(&(base_addr + self.x.value as u16 + ZP_S));
                 self.a.value = value;
             }
             OPCODE::LDA_A => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr));
+                let value = *memory.read_byte(&(high_addr + low_addr));
                 self.a.value = value;
             }
             /* TODO: consider page crosses and add a extra cpu cycle to the execution */
             OPCODE::LDA_AX => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16)));
+                let value = *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16)));
                 self.a.value = value;
             }
             /* TODO: consider page crosses and add a extra cpu cycle to the execution */
             OPCODE::LDA_AY => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16)));
+                let value = *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16)));
                 self.a.value = value;
             }
             OPCODE::LDA_IX => {
@@ -167,8 +174,11 @@ impl CPU {
             }
             /* TODO: consider page crosses and add a extra cpu cycle to the execution (not totally sure why this only occurs if y reg is used)*/
             OPCODE::LDA_IY => {
-                let high_addr: u16 = *memory.read_byte(&(*memory.read_byte(&(first_opr as u16)) as u16)) as u16;
-                let low_addr: u16 = (*memory.read_byte(&((*memory.read_byte(&((first_opr) as u16)) + 1) as u16)) + self.y.value) as u16;
+                let high_addr: u16 =
+                    *memory.read_byte(&(*memory.read_byte(&(first_opr as u16)) as u16)) as u16;
+                let low_addr: u16 = (*memory
+                    .read_byte(&((*memory.read_byte(&((first_opr) as u16)) + 1) as u16))
+                    + self.y.value) as u16;
                 let value = memory.read_byte(&((high_addr << 8) + low_addr));
                 self.a.value = *value;
             }
@@ -180,14 +190,14 @@ impl CPU {
             OPCODE::LDX_A => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr));
+                let value = *memory.read_byte(&(high_addr + low_addr));
                 self.x.value = value;
             }
             /* TODO: consider page crosses and add a extra cpu cycle to the execution */
             OPCODE::LDX_AY => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16)));
+                let value = *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16)));
                 self.x.value = value;
             }
             OPCODE::LDX_ZP => {
@@ -197,7 +207,7 @@ impl CPU {
             }
             OPCODE::LDX_ZPY => {
                 let base_addr: u16 = *memory.read_byte(&first_opr) as u16;
-                let value : u8 = *memory.read_byte(&(base_addr + self.y.value as u16 + ZP_S));
+                let value: u8 = *memory.read_byte(&(base_addr + self.y.value as u16 + ZP_S));
                 self.x.value = value;
             }
 
@@ -208,14 +218,14 @@ impl CPU {
             OPCODE::LDY_A => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr));
+                let value = *memory.read_byte(&(high_addr + low_addr));
                 self.y.value = value;
             }
             /* TODO: consider page crosses and add a extra cpu cycle to the execution */
             OPCODE::LDY_AX => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                let value= *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16)));
+                let value = *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16)));
                 self.y.value = value;
             }
             OPCODE::LDY_ZP => {
@@ -225,7 +235,7 @@ impl CPU {
             }
             OPCODE::LDY_ZPX => {
                 let base_addr: u16 = *memory.read_byte(&first_opr) as u16;
-                let value : u8 = *memory.read_byte(&(base_addr + self.x.value as u16 + ZP_S));
+                let value: u8 = *memory.read_byte(&(base_addr + self.x.value as u16 + ZP_S));
                 self.y.value = value;
             }
 
@@ -238,7 +248,10 @@ impl CPU {
                 self.cmp_op(self.x.value, *memory.read_byte(&(high_addr + low_addr)));
             }
             OPCODE::CPX_ZP => {
-                self.cmp_op(self.x.value, *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)));
+                self.cmp_op(
+                    self.x.value,
+                    *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)),
+                );
             }
 
             OPCODE::CPY_I => {
@@ -250,14 +263,20 @@ impl CPU {
                 self.cmp_op(self.y.value, *memory.read_byte(&(high_addr + low_addr)));
             }
             OPCODE::CPY_ZP => {
-                self.cmp_op(self.y.value, *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)));
+                self.cmp_op(
+                    self.y.value,
+                    *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)),
+                );
             }
 
             OPCODE::CMP_I => {
                 self.cmp_op(self.a.value, *memory.read_byte(&first_opr));
             }
             OPCODE::CMP_ZP => {
-                self.cmp_op(self.a.value, *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)));
+                self.cmp_op(
+                    self.a.value,
+                    *memory.read_byte(&(*memory.read_byte(&(first_opr + ZP_S)) as u16)),
+                );
             }
             OPCODE::CMP_ZPX => {
                 let addr_offs = *memory.read_byte(&first_opr) as u16;
@@ -272,12 +291,18 @@ impl CPU {
             OPCODE::CMP_AX => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                self.cmp_op(self.a.value, *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16))));
+                self.cmp_op(
+                    self.a.value,
+                    *memory.read_byte(&(high_addr + low_addr + (self.x.value as u16))),
+                );
             }
             OPCODE::CMP_AY => {
                 let low_addr: u16 = *memory.read_byte(&first_opr) as u16;
                 let high_addr: u16 = (*memory.read_byte(&(first_opr + 1)) as u16) << 8;
-                self.cmp_op(self.a.value, *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16))));
+                self.cmp_op(
+                    self.a.value,
+                    *memory.read_byte(&(high_addr + low_addr + (self.y.value as u16))),
+                );
             }
             OPCODE::CMP_IX => {
                 let high_addr: u16 = *memory.read_byte(&first_opr) as u16;
@@ -294,7 +319,7 @@ impl CPU {
 
             _ => {
                 let opcode: u8 = (*instruction.opc()).into();
-                panic!("Instruction not handled by simulation. OPCODE: {}",opcode);
+                panic!("Instruction not handled by simulation. OPCODE: {}", opcode);
             }
         }
         self.program_counter.value += instruction.size();

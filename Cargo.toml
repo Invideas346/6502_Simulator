@@ -7,3 +7,12 @@ edition = "2021"
 
 [dependencies]
 num_enum = "0.5.7"
+
+[profile.dev]
+opt-level = 3
+
+[profile.release]
+overflow-checks = false
+opt-level = "s"
+lto = true
+codegen-units = 1
