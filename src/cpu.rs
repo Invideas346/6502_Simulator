@@ -92,20 +92,17 @@ impl CPU {
                     + (self.y.value as u16);
             }
             AddressingMode::INDIRECTX => {
-                let high_addr: u16 = *memory.read_byte(&(self.program_counter.value + 1)) as u16;
-                let low_addr: u16 = *memory.read_byte(&(high_addr + self.x.value as u16)) as u16;
+                let base_addr = *memory.read_byte(&(self.program_counter.value + 1)) as u16;
+                let high_addr: u16 =
+                    *memory.read_byte(&(base_addr + self.x.value as u16 + 1)) as u16;
+                let low_addr: u16 = *memory.read_byte(&(base_addr + self.x.value as u16)) as u16;
                 addr = (high_addr << 8) + low_addr;
             }
             AddressingMode::INDIRECTY => {
-                addr = ((*memory
-                    .read_byte(&(*memory.read_byte(&(self.program_counter.value + 1)) as u16)))
-                    as u16)
-                    + (((*memory.read_byte(
-                        &(((*memory.read_byte(&((self.program_counter.value + 1) as u16))) as u16)
-                            + 1),
-                    ) as u16)
-                        << 8) as u16)
-                    + (self.y.value as u16);
+                let base_addr = *memory.read_byte(&(self.program_counter.value + 1)) as u16;
+                let low_addr = *memory.read_byte(&base_addr) as u16;
+                let high_addr = *memory.read_byte(&(base_addr + 1)) as u16;
+                addr = (high_addr << 8) + low_addr + self.y.value as u16;
             }
         }
         addr
