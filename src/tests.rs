@@ -2,10 +2,12 @@
 mod tests {
     use crate::memory::ZP_S;
     use crate::OPCODE::{
-        ADC_A, ADC_AX, ADC_AY, ADC_I, ADC_IX, ADC_IY, ADC_ZP, ADC_ZPX, CPX_A, CPX_I, CPX_ZP, CPY_A,
-        CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY,
-        LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY,
-        STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX,
+        ADC_A, ADC_AX, ADC_AY, ADC_I, ADC_IX, ADC_IY, ADC_ZP, ADC_ZPX, AND_A, AND_AX, AND_AY,
+        AND_I, AND_IX, AND_IY, AND_ZP, AND_ZPX, ASL_A, ASL_ACC, ASL_AX, ASL_ZP, ASL_ZPX, BIT_A,
+        BIT_ZP, CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY,
+        LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP,
+        LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY,
+        STY_A, STY_ZP, STY_ZPX,
     };
     use crate::{Instruction, Memory, CPU, LDA_A};
 
@@ -449,5 +451,161 @@ mod tests {
         cpu.execute(&mut mem);
 
         assert_eq!(cpu.a().value, 0xBA);
+    }
+
+    #[test]
+    fn test_and_i() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_I, &vec![0xF0]));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_zp() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_ZP, &vec![0x20]));
+        mem.write_byte(&(ZP_S + 0x20), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_zpx() {
+        let mut cpu: CPU = CPU::new(0xFF, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_ZPX, &vec![0x20]));
+        mem.write_byte(&(ZP_S + 0x30), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_a() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_A, &vec![0x20, 0x40]));
+        mem.write_byte(&(0x4020), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_ax() {
+        let mut cpu: CPU = CPU::new(0xFF, 0xAA, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_AX, &vec![0x20, 0x40]));
+        mem.write_byte(&(0x4020 + 0xAA), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_ay() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0xAA, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_AY, &vec![0x20, 0x40]));
+        mem.write_byte(&(0x4020 + 0xAA), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_ix() {
+        let mut cpu: CPU = CPU::new(0xFF, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_IX, &vec![0x20]));
+        mem.write_byte(&(0x30), &(0x10));
+        mem.write_byte(&(0x31), &(0x20));
+        mem.write_byte(&(0x2010), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_and_iy() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0x10, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(AND_IY, &vec![0x20]));
+        mem.write_byte(&(0x20), &(0x10));
+        mem.write_byte(&(0x21), &(0x20));
+        mem.write_byte(&(0x2010 + 0x10), &(0xF0));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xF0);
+    }
+
+    #[test]
+    fn test_asl_acc() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ASL_ACC, &vec![]));
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.a().value, 0xFE);
+    }
+
+    #[test]
+    fn test_asl_zp() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ASL_ZP, &vec![0x20]));
+        mem.write_byte(&(ZP_S + 0x20), &(0xFF));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x20)), 0xFE);
+    }
+
+    #[test]
+    fn test_asl_zpx() {
+        let mut cpu: CPU = CPU::new(0xFF, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ASL_ZPX, &vec![0x20]));
+        mem.write_byte(&(ZP_S + 0x20 + 0x10), &(0xFF));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x20 + 0x10)), 0xFE);
+    }
+
+    #[test]
+    fn test_asl_a() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ASL_A, &vec![0x20, 0x60]));
+        mem.write_byte(&(0x6020), &(0x01));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x6020)), 0x02);
+    }
+
+    #[test]
+    fn test_asl_ax() {
+        let mut cpu: CPU = CPU::new(0xFF, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ASL_AX, &vec![0x20, 0x60]));
+        mem.write_byte(&(0x6020 + 0x10), &(0xFF));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x6020 + 0x10)), 0xFE);
+    }
+
+    #[test]
+    fn test_bit_zp() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(BIT_ZP, &vec![0x60]));
+        mem.write_byte(&(ZP_S + 0x60), &(0b10100000));
+        cpu.execute(&mut mem);
+        assert_eq!(*cpu.z_flag(), false);
+        assert_eq!(*cpu.n_flag(), true);
+        assert_eq!(*cpu.v_flag(), false);
+    }
+
+    #[test]
+    fn test_bit_a() {
+        let mut cpu: CPU = CPU::new(0xFF, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(BIT_A, &vec![0x60, 0x20]));
+        mem.write_byte(&(0x2060), &(0b10100000));
+        cpu.execute(&mut mem);
+        assert_eq!(*cpu.z_flag(), false);
+        assert_eq!(*cpu.n_flag(), true);
+        assert_eq!(*cpu.v_flag(), false);
     }
 }

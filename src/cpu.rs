@@ -62,6 +62,25 @@ impl CPU {
             self.v_flag = true;
         }
     }
+    fn and_calc_flags(&mut self) {
+        if self.a.value == 0 {
+            self.z_flag = true;
+        }
+        if self.a.value >= 0x80 {
+            self.n_flag = true;
+        }
+    }
+    fn asl_calc_flags(&mut self, prev_value: &u8) {
+        if self.a.value == 0 {
+            self.z_flag = true;
+        }
+        if *prev_value >= 0x80 {
+            self.c_flag = true;
+        }
+        if self.a.value >= 0x80 {
+            self.n_flag = true;
+        }
+    }
     fn get_addr(&self, memory: &mut Memory, mode: AddressingMode) -> u16 {
         let mut addr: u16;
         match mode {
@@ -399,6 +418,112 @@ impl CPU {
                 self.adc_calc_flags(&prev_value)
             }
 
+            OPCODE::AND_I => {
+                let value = *memory.read_byte(&first_opr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_ZPX => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_AX => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_AY => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEY);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_IX => {
+                let addr = self.get_addr(memory, AddressingMode::INDIRECTX);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+            OPCODE::AND_IY => {
+                let addr = self.get_addr(memory, AddressingMode::INDIRECTY);
+                let value = *memory.read_byte(&addr);
+                self.a.value &= value;
+                self.and_calc_flags();
+            }
+
+            OPCODE::ASL_ACC => {
+                let prev_value = self.a.value;
+                self.a.value <<= 1;
+                self.asl_calc_flags(&prev_value);
+            }
+            OPCODE::ASL_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let mut value = *memory.read_byte(&addr);
+                let prev_value = value;
+                value <<= 1;
+                memory.write_byte(&addr, &value);
+                self.asl_calc_flags(&prev_value);
+            }
+            OPCODE::ASL_ZPX => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let mut value = *memory.read_byte(&addr);
+                let prev_value = value;
+                value <<= 1;
+                memory.write_byte(&addr, &value);
+                self.asl_calc_flags(&prev_value);
+            }
+            OPCODE::ASL_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let mut value = *memory.read_byte(&addr);
+                let prev_value = value;
+                value <<= 1;
+                memory.write_byte(&addr, &value);
+                self.asl_calc_flags(&prev_value);
+            }
+            OPCODE::ASL_AX => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let mut value = *memory.read_byte(&addr);
+                let prev_value = value;
+                value <<= 1;
+                memory.write_byte(&addr, &value);
+                self.asl_calc_flags(&prev_value);
+            }
+
+            OPCODE::BIT_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr);
+                let added_value = value & self.a.value;
+                if added_value == 0 {
+                    self.z_flag = true;
+                }
+                self.n_flag = (value & (0x1 << 7)) != 0;
+                self.v_flag = (value & (0x1 << 6)) != 0;
+            }
+            OPCODE::BIT_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr);
+                let added_value = value & self.a.value;
+                if added_value == 0 {
+                    self.z_flag = true;
+                }
+                self.n_flag = (value & (0x1 << 7)) != 0;
+                self.v_flag = (value & (0x1 << 6)) != 0;
+            }
             _ => {
                 let opcode: u8 = (*instruction.opc()).into();
                 panic!("Instruction not handled by simulation. OPCODE: {}", opcode);
