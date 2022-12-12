@@ -1,3 +1,5 @@
+use std::num::Wrapping;
+
 use crate::memory::{Memory, PROGRAM_ROM_S, ZP_S};
 use crate::register::Register;
 use crate::{Instruction, OPCODE};
@@ -49,6 +51,7 @@ impl CPU {
         }
     }
     fn adc_calc_flags(&mut self, prev_value: &u8) {
+        let prev_n_flag = self.n_flag;
         if self.a.value < *prev_value {
             self.c_flag = true;
         }
@@ -58,7 +61,7 @@ impl CPU {
         if self.a.value >= 0x80 {
             self.n_flag = true;
         }
-        if self.c_flag ^ self.n_flag {
+        if self.c_flag || prev_n_flag != self.n_flag {
             self.v_flag = true;
         }
     }
@@ -523,6 +526,69 @@ impl CPU {
                 }
                 self.n_flag = (value & (0x1 << 7)) != 0;
                 self.v_flag = (value & (0x1 << 6)) != 0;
+            }
+
+            OPCODE::BPL => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                // Flag combination for a positiv previous compare operation
+                if self.z_flag == false && self.c_flag == false {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BMI => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.z_flag == false && self.c_flag == true {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BVC => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.v_flag == false {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BVS => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.v_flag == true {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BCC => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.c_flag == false {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BCS => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.c_flag == true {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BNE => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.z_flag == false {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+            OPCODE::BEQ => {
+                let pc_offset = *memory.read_byte(&first_opr);
+                if self.z_flag == true {
+                    self.program_counter.value += pc_offset as u16;
+                }
+            }
+
+            OPCODE::INX => {
+                self.x.value += 1;
+            }
+            OPCODE::DEX => {
+                self.x.value -= 1;
+            }
+            OPCODE::INY => {
+                self.y.value += 1;
+            }
+            OPCODE::DEY => {
+                self.y.value -= 1;
             }
             _ => {
                 let opcode: u8 = (*instruction.opc()).into();

@@ -3,11 +3,11 @@ mod tests {
     use crate::memory::ZP_S;
     use crate::OPCODE::{
         ADC_A, ADC_AX, ADC_AY, ADC_I, ADC_IX, ADC_IY, ADC_ZP, ADC_ZPX, AND_A, AND_AX, AND_AY,
-        AND_I, AND_IX, AND_IY, AND_ZP, AND_ZPX, ASL_A, ASL_ACC, ASL_AX, ASL_ZP, ASL_ZPX, BIT_A,
-        BIT_ZP, CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I, CPY_ZP, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY,
-        LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP,
-        LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY,
-        STY_A, STY_ZP, STY_ZPX,
+        AND_I, AND_IX, AND_IY, AND_ZP, AND_ZPX, ASL_A, ASL_ACC, ASL_AX, ASL_ZP, ASL_ZPX, BCC, BCS,
+        BEQ, BIT_A, BIT_ZP, BMI, BNE, BPL, BVC, BVS, CMP_I, CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I,
+        CPY_ZP, DEX, INX, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY,
+        LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY,
+        STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX,
     };
     use crate::{Instruction, Memory, CPU, LDA_A};
 
@@ -607,5 +607,47 @@ mod tests {
         assert_eq!(*cpu.z_flag(), false);
         assert_eq!(*cpu.n_flag(), true);
         assert_eq!(*cpu.v_flag(), false);
+    }
+
+    #[test]
+    fn test_bpl() {
+        let mut cpu: CPU = CPU::new(0x10, 0x20, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CMP_I, &vec![0x11]));
+        mem.push_back_ins(Instruction::new(BPL, &vec![0x1])); // 1 - Byte offset because INX is 1 Byte lone (jump over it)
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.push_back_ins(Instruction::new(DEX, &vec![]));
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x1F);
+    }
+
+    #[test]
+    fn test_bmi() {
+        let mut cpu: CPU = CPU::new(0x10, 0x20, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(CMP_I, &vec![0x09]));
+        mem.push_back_ins(Instruction::new(BMI, &vec![0x1])); // 1 - Byte offset because INX is 1 Byte lone (jump over it)
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.push_back_ins(Instruction::new(DEX, &vec![]));
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x1F);
+    }
+
+    #[test]
+    fn test_bvc() {
+        let mut cpu: CPU = CPU::new(0xFF, 0x20, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(ADC_I, &vec![0x01]));
+        mem.push_back_ins(Instruction::new(BVC, &vec![0x1])); // 1 - Byte offset because INX is 1 Byte lone (jump over it)
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.push_back_ins(Instruction::new(DEX, &vec![]));
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x1F);
     }
 }
