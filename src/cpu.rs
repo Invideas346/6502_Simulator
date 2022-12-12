@@ -1,4 +1,4 @@
-use std::num::Wrapping;
+use core::num::Wrapping;
 
 use crate::memory::{Memory, PROGRAM_ROM_S, ZP_S};
 use crate::register::Register;
@@ -51,7 +51,6 @@ impl CPU {
         }
     }
     fn adc_calc_flags(&mut self, prev_value: &u8) {
-        let prev_n_flag = self.n_flag;
         if self.a.value < *prev_value {
             self.c_flag = true;
         }
@@ -61,7 +60,7 @@ impl CPU {
         if self.a.value >= 0x80 {
             self.n_flag = true;
         }
-        if self.c_flag || prev_n_flag != self.n_flag {
+        if self.c_flag || (*prev_value < 0x80 && self.a.value >= 0x80) {
             self.v_flag = true;
         }
     }
@@ -368,56 +367,56 @@ impl CPU {
             OPCODE::ADC_I => {
                 let value = *memory.read_byte(&first_opr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_ZP => {
                 let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_ZPX => {
                 let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_A => {
                 let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_AX => {
                 let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_AY => {
                 let addr = self.get_addr(memory, AddressingMode::ABSOLUTEY);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_IX => {
                 let addr = self.get_addr(memory, AddressingMode::INDIRECTX);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
             OPCODE::ADC_IY => {
                 let addr = self.get_addr(memory, AddressingMode::INDIRECTY);
                 let value = *memory.read_byte(&addr);
                 let prev_value = self.a.value;
-                self.a.value += value;
+                self.a.value = u8::wrapping_add(self.a.value, value);
                 self.adc_calc_flags(&prev_value)
             }
 
