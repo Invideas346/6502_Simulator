@@ -1,5 +1,3 @@
-use core::num::Wrapping;
-
 use crate::memory::{Memory, PROGRAM_ROM_S, ZP_S};
 use crate::register::Register;
 use crate::{Instruction, OPCODE};
@@ -11,6 +9,7 @@ enum AddressingMode {
     ABSOLUTE,
     ABSOLUTEX,
     ABSOLUTEY,
+    INDIRECT,
     INDIRECTX,
     INDIRECTY,
 }
@@ -111,6 +110,14 @@ impl CPU {
                 addr = (*memory.read_byte(&(self.program_counter.value + 1)) as u16)
                     + ((*memory.read_byte(&(self.program_counter.value + 2)) as u16) << 8)
                     + (self.y.value as u16);
+            }
+            AddressingMode::INDIRECT => {
+                let base_addr = self.program_counter.value + 1;
+                let low_addr = *memory.read_byte(&base_addr) as u16;
+                let high_addr = *memory.read_byte(&(base_addr + 1)) as u16;
+                addr = *memory.read_byte(&((high_addr << 8) + low_addr)) as u16;
+                addr +=
+                    ((*memory.read_byte(&((high_addr << 8) + low_addr + 1)) as u16) << 8) as u16;
             }
             AddressingMode::INDIRECTX => {
                 let base_addr = *memory.read_byte(&(self.program_counter.value + 1)) as u16;
@@ -589,12 +596,66 @@ impl CPU {
             OPCODE::DEY => {
                 self.y.value -= 1;
             }
+
+            OPCODE::DEC_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr) - 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::DEC_ZPX => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let value = *memory.read_byte(&addr) - 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::DEC_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr) - 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::DEC_AX => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let value = *memory.read_byte(&addr) - 1;
+                memory.write_byte(&addr, &value);
+            }
+
+            OPCODE::INC_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr) + 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::INC_ZPX => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let value = *memory.read_byte(&addr) + 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::INC_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr) + 1;
+                memory.write_byte(&addr, &value);
+            }
+            OPCODE::INC_AX => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let value = *memory.read_byte(&addr) + 1;
+                memory.write_byte(&addr, &value);
+            }
+
+            OPCODE::JMP_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                self.program_counter.value = addr;
+            }
+
+            OPCODE::JMP_I => {
+                let addr = self.get_addr(memory, AddressingMode::INDIRECT);
+                self.program_counter.value = addr;
+            }
             _ => {
                 let opcode: u8 = (*instruction.opc()).into();
                 panic!("Instruction not handled by simulation. OPCODE: {}", opcode);
             }
         }
-        self.program_counter.value += instruction.size();
+        if *instruction.opc() != OPCODE::JMP_I && *instruction.opc() != OPCODE::JMP_A {
+            self.program_counter.value += instruction.size();
+        }
         self.inc_clock_cycles_via_ins(&instruction);
     }
 

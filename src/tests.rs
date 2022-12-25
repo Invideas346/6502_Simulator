@@ -5,9 +5,10 @@ mod tests {
         ADC_A, ADC_AX, ADC_AY, ADC_I, ADC_IX, ADC_IY, ADC_ZP, ADC_ZPX, AND_A, AND_AX, AND_AY,
         AND_I, AND_IX, AND_IY, AND_ZP, AND_ZPX, ASL_A, ASL_ACC, ASL_AX, ASL_ZP, ASL_ZPX, BCC, BCS,
         BEQ, BIT_A, BIT_ZP, BMI, BNE, BPL, BVC, BVS, CMP_I, CPX_A, CPX_I, CPX_ZP, CPY_A, CPY_I,
-        CPY_ZP, DEX, INX, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY,
-        LDX_I, LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY,
-        STA_IX, STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX,
+        CPY_ZP, DEC_A, DEC_AX, DEC_ZP, DEC_ZPX, DEX, INC_A, INC_AX, INC_ZP, INC_ZPX, INX, JMP_A,
+        JMP_I, LDA_AX, LDA_AY, LDA_I, LDA_IX, LDA_IY, LDA_ZP, LDA_ZPX, LDX_A, LDX_AY, LDX_I,
+        LDX_ZP, LDX_ZPY, LDY_A, LDY_AX, LDY_I, LDY_ZP, LDY_ZPX, STA_A, STA_AX, STA_AY, STA_IX,
+        STA_IY, STA_ZP, STA_ZPX, STX_A, STX_ZP, STX_ZPY, STY_A, STY_ZP, STY_ZPX,
     };
     use crate::{Instruction, Memory, CPU, LDA_A};
 
@@ -719,5 +720,113 @@ mod tests {
         cpu.execute(&mut mem);
         cpu.execute(&mut mem);
         assert_eq!(cpu.x().value, 0x1F);
+    }
+
+    #[test]
+    fn test_dec_zp() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(DEC_ZP, &vec![0x10]));
+        mem.write_byte(&(ZP_S + 0x10), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x10)), 0x13);
+    }
+
+    #[test]
+    fn test_dec_zpx() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(DEC_ZPX, &vec![0x10]));
+        mem.write_byte(&(ZP_S + 0x20), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x20)), 0x13);
+    }
+
+    #[test]
+    fn test_dec_a() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(DEC_A, &vec![0x10, 0x40]));
+        mem.write_byte(&(0x4010), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x4010)), 0x13);
+    }
+
+    #[test]
+    fn test_dec_ax() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(DEC_AX, &vec![0x10, 0x40]));
+        mem.write_byte(&(0x4010 + 0x10), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x4010 + 0x10)), 0x13);
+    }
+
+    #[test]
+    fn test_inc_zp() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(INC_ZP, &vec![0x10]));
+        mem.write_byte(&(ZP_S + 0x10), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x10)), 0x15);
+    }
+
+    #[test]
+    fn test_inc_zpx() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(INC_ZPX, &vec![0x10]));
+        mem.write_byte(&(ZP_S + 0x20), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(ZP_S + 0x20)), 0x15);
+    }
+
+    #[test]
+    fn test_inc_a() {
+        let mut cpu: CPU = CPU::new(0, 0, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(INC_A, &vec![0x10, 0x40]));
+        mem.write_byte(&(0x4010), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x4010)), 0x15);
+    }
+
+    #[test]
+    fn test_inc_ax() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(INC_AX, &vec![0x10, 0x40]));
+        mem.write_byte(&(0x4010 + 0x10), &(0x14));
+        cpu.execute(&mut mem);
+        assert_eq!(*mem.read_byte(&(0x4010 + 0x10)), 0x15);
+    }
+
+    #[test]
+    fn test_jmp_a() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(JMP_A, &vec![0x05, 0x80]));
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.push_back_ins(Instruction::new(DEX, &vec![]));
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x11);
+    }
+
+    #[test]
+    fn test_jmp_i() {
+        let mut cpu: CPU = CPU::new(0, 0x10, 0, 0);
+        let mut mem: Memory = Memory::new();
+        mem.push_back_ins(Instruction::new(JMP_I, &vec![0x00, 0x40]));
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.push_back_ins(Instruction::new(DEX, &vec![]));
+        mem.push_back_ins(Instruction::new(INX, &vec![]));
+        mem.write_byte(&(0x4000), &(0x05));
+        mem.write_byte(&(0x4001), &(0x80));
+        cpu.execute(&mut mem);
+        cpu.execute(&mut mem);
+        assert_eq!(cpu.x().value, 0x11);
     }
 }

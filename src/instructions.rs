@@ -2,7 +2,7 @@ use std::convert::From;
 use num_enum::IntoPrimitive;
 
 #[allow(non_camel_case_types)]
-#[derive(Copy, Clone, IntoPrimitive, Debug)]
+#[derive(Copy, Clone, IntoPrimitive, Debug, PartialEq)]
 #[repr(u8)]
 pub enum OPCODE {
     STA_ZP = 0x85,
@@ -100,6 +100,7 @@ pub enum OPCODE {
     BNE = 0xD0,
     BEQ = 0xF0,
 
+    /* Interrupt magic -> http://6502.org/tutorials/interrupts.html#2.2 */
     BRK = 0x00,
 
     DEC_ZP = 0xC6,

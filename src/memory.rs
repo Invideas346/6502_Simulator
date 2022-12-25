@@ -49,7 +49,7 @@ impl Memory {
     }
 
     pub fn read_byte(&self, addr: &u16) -> &u8 {
-        &self.physical_mem[(*addr) as usize]
+        &self.physical_mem[*addr as usize]
     }
 
     pub fn write_byte(&mut self, addr: &u16, value: &u8) {
