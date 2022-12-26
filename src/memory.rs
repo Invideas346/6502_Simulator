@@ -34,10 +34,11 @@ pub struct Memory {
 
 impl Memory {
     pub fn new() -> Memory {
-        Memory {
+        let mem = Memory {
             physical_mem: [0; u16::MAX as usize + 1],
             instruction_pos: PROGRAM_ROM_S,
-        }
+        };
+        mem
     }
 
     pub fn push_back_ins(&mut self, ins: Instruction) {

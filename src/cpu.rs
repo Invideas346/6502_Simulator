@@ -82,6 +82,10 @@ impl CPU {
             self.n_flag = true;
         }
     }
+    fn ora_calc_flags(&mut self) {
+        self.z_flag = self.a.value == 0;
+        self.n_flag = self.a.value >= 0x80;
+    }
     fn get_addr(&self, memory: &mut Memory, mode: AddressingMode) -> u16 {
         let mut addr: u16;
         match mode {
@@ -647,6 +651,113 @@ impl CPU {
             OPCODE::JMP_I => {
                 let addr = self.get_addr(memory, AddressingMode::INDIRECT);
                 self.program_counter.value = addr;
+            }
+
+            OPCODE::LSR_ACC => {
+                self.c_flag = if self.a.value & 0x01 == 0x01 {
+                    true
+                } else {
+                    false
+                };
+                self.a.value >>= 1;
+                self.z_flag = if self.a.value == 0 { true } else { false };
+                self.n_flag = false;
+            }
+            OPCODE::LSR_ZP => {
+                self.c_flag = if self.a.value & 0x01 == 0x01 {
+                    true
+                } else {
+                    false
+                };
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr);
+                memory.write_byte(&addr, &(value >> 1));
+                self.z_flag = if self.a.value == 0 { true } else { false };
+                self.n_flag = false;
+            }
+            OPCODE::LSR_ZPX => {
+                self.c_flag = if self.a.value & 0x01 == 0x01 {
+                    true
+                } else {
+                    false
+                };
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let value = *memory.read_byte(&addr);
+                memory.write_byte(&addr, &(value >> 1));
+                self.z_flag = if self.a.value == 0 { true } else { false };
+                self.n_flag = false;
+            }
+            OPCODE::LSR_A => {
+                self.c_flag = if self.a.value & 0x01 == 0x01 {
+                    true
+                } else {
+                    false
+                };
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr);
+                memory.write_byte(&addr, &(value >> 1));
+                self.z_flag = if self.a.value == 0 { true } else { false };
+                self.n_flag = false;
+            }
+            OPCODE::LSR_AX => {
+                self.c_flag = if self.a.value & 0x01 == 0x01 {
+                    true
+                } else {
+                    false
+                };
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let value = *memory.read_byte(&addr);
+                memory.write_byte(&addr, &(value >> 1));
+                self.z_flag = if self.a.value == 0 { true } else { false };
+                self.n_flag = false;
+            }
+            OPCODE::NOP => { /*Does nothing*/ }
+            OPCODE::ORA_I => {
+                let value = *memory.read_byte(&first_opr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_ZP => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGE);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_ZPX => {
+                let addr = self.get_addr(memory, AddressingMode::ZEROPAGEX);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_A => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTE);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_AX => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEX);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_AY => {
+                let addr = self.get_addr(memory, AddressingMode::ABSOLUTEY);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_IX => {
+                let addr = self.get_addr(memory, AddressingMode::INDIRECTX);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
+            }
+            OPCODE::ORA_IY => {
+                let addr = self.get_addr(memory, AddressingMode::INDIRECTY);
+                let value = *memory.read_byte(&addr);
+                self.a.value |= value;
+                self.ora_calc_flags();
             }
             _ => {
                 let opcode: u8 = (*instruction.opc()).into();

@@ -1,3 +1,5 @@
+/*TODO: Write test cases for the lsr ins. and the ora ins. */
+
 #[cfg(test)]
 mod tests {
     use crate::memory::ZP_S;
